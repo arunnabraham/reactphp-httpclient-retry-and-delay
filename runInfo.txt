@@ -1,0 +1,38 @@
+Easly run this part as php local dev or any thridparty servers to test
+
+Example: php -S localhost:4000
+
+Core logic 
+
+<?php
+
+TLDR;
+// $this->client = new Browser 
+
+public function get($url): PromiseInterface
+    {
+        return $this->client->withRejectErrorResponse(false)->get(
+            $url,
+            ['Accept' => 'application/json']
+        )->then(
+            function (ResponseInterface $response) use ($url) {
+
+                if ($response->getStatusCode() === 500) {
+                    if ($this->retry === self::MAX_RETRIES) {
+                        $this->retry = 0;
+                    } else {
+                        echo 'retrying...';
+                        $this->retry += 1;
+                        //delay
+                        return sleep(1.5)->then(function () use ($url) {
+                            return $this->get($url);
+                        });
+                    }
+                }
+                $this->retry = 0;
+                return $response;
+            },
+            function (\Exception $e) {
+            }
+        );
+    }
