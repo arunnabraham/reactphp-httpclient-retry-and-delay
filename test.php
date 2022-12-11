@@ -1,21 +1,27 @@
 <?php
 
-header('Content-Type: application/json');
-$retryInfoPath = __DIR__ . '/retries.txt';
-$retries = (int)file_get_contents($retryInfoPath);
-file_put_contents($retryInfoPath, (string)($retries+1));
-if($retries >= 5)
-{
-    http_response_code(200);
-    echo json_encode([
-        "status" => "ok"
-    ]);
-}
-else
-{
-http_response_code(500);
-echo json_encode([
-    "status" => "Server Error"
-]);
-}
+use ArunabrahamPup\HttpRetryWithDelay\Http\Client;
+use Psr\Http\Message\ResponseInterface;
 
+require_once __DIR__ . '/vendor/autoload.php';
+
+
+$client = new Client;
+
+$q = new Clue\React\Mq\Queue(3, null, function ($url) use ($client) {
+    return $client->get($url);
+});
+
+$urls = [
+    'http://localhost:4000/test.php',
+    'http://localhost:4000/test2.php'
+];
+foreach ($urls as $url) {
+    $q($url)->then(function (ResponseInterface $response) use ($url) {
+        echo json_encode([
+            'url' => $url,
+            'statusCode' => $response->getStatusCode(),
+            'body' =>  $response->getBody()->getContents()
+        ]) . PHP_EOL;
+    });
+}
