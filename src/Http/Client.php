@@ -12,12 +12,13 @@ use function React\Promise\Timer\sleep;
 
 class Client
 {
+    public const ERROR_CODES = [500, 429];
+    public const MAX_RETRIES = 5;
+    public const MIN_DELAY_SECONDS = 1.5;
 
-    const ERROR_CODES = [500, 429];
-    const MAX_RETRIES = 5;
-    const MIN_DELAY_SECONDS = 1.5;
     private array $urlRetries = [];
     private Browser $client;
+
     public function __construct()
     {
         $this->client = new Browser();
@@ -30,7 +31,6 @@ class Client
             ['Accept' => 'application/json']
         )->then(
             function (ResponseInterface $response) use ($url) {
-
                 return $this->responseProcessor($response, $url);
             },
             function (\Exception $e) {
@@ -40,20 +40,19 @@ class Client
 
     public function responseProcessor(ResponseInterface $response, string $url): ResponseInterface|PromiseInterface
     {
-       return match($response->getStatusCode()) {
+        return match ($response->getStatusCode()) {
             200 => $response,
             500 => $this->retry($response, $url),
-            429 => $this->retry($response, $url, (int)$response->getHeader('Retry-After')[0] ?? -1)
+            429 => $this->retry($response, $url, (int)$response->getHeader('Retry-After')[0] ?? 0)
         };
     }
 
     public function retry(ResponseInterface $response, string $url, int $delaySeconds=0): PromiseInterface
     {
-        if(!isset($this->urlRetries[$url]))
-        {
+        if (!isset($this->urlRetries[$url])) {
             $this->urlRetries[$url] = 1;
         }
-        if($this->urlRetries[$url] <= self::MAX_RETRIES) {
+        if ($this->urlRetries[$url] <= self::MAX_RETRIES) {
             echo 'retrying...';
             $this->urlRetries[$url]+=1;
             //delay

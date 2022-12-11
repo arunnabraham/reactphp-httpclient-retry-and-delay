@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 require_once __DIR__ . '/vendor/autoload.php';
 
 
-$client = new Client;
+$client = new Client();
 
 $q = new Clue\React\Mq\Queue(3, null, function ($url) use ($client) {
     return $client->get($url);
