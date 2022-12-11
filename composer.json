@@ -1,0 +1,23 @@
+{
+    "name": "arunabraham-pup/http-retry-with-delay",
+    "description": "Testing http with retry and delay",
+    "type": "project",
+    "license": "ISC",
+    "autoload": {
+        "psr-4": {
+            "ArunabrahamPup\\HttpRetryWithDelay\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Arun Abraham",
+            "email": "arun.abraham@productsup.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "clue/mq-react": "^1.5",
+        "react/http": "^1.8",
+        "react/promise-timer": "^1.9.0"
+    }
+}
