@@ -1,2 +1,2 @@
-# Reactphp Http Retry and Delay Implementation
+# Reactphp Http client Retry
 Implementation of http retry and delay with ReactPHP
